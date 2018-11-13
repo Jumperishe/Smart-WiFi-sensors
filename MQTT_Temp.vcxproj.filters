@@ -21,5 +21,8 @@
     <ClInclude Include="__vm\.MQTT_Temp.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="__vm\.Smart-WiFi-sensors.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
