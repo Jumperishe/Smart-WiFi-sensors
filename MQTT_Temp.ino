@@ -1,9 +1,10 @@
 
 
-#include <OneWire.h>
+#include <SparkFunBME280.h>
+#include <Wire.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_BME280.h>
-#include <Adafruit_Sensor.h>
+//#include <Adafruit_Sensor.h>
 
 #include <WiFiUdp.h>
 #include <WiFiServer.h>
@@ -25,15 +26,17 @@
 #define BME_CS 10
 
 float t, h, p;
-const char* ssid = "JumperOK";
-const char* password = "specialized200926";
+const char* ssid = "Edimax_2g";
+const char* password = "magnaTpwd0713key";
 const char* mqttServer = "109.86.162.193";
 const int mqttPort = 1883;
 
+//BME280 mySensorA;
 WiFiClient espClient;
 PubSubClient client(espClient);	
-Adafruit_BME280 bme;
-Adafruit_BMP280 bmp;
+BME280 mySensor;
+//Adafruit_BME280 bme;
+//Adafruit_BMP280 bmp;
 void setup()
 {
 	Wire.begin();
@@ -42,16 +45,23 @@ void setup()
 	
 	Serial.println("Testing BME280 sensor");
 
-	if (bme.begin()) {
+	/*if (bme.begin()) {
 		Serial.println("Could not find BME280 sensor");
 		while (1);
 	}
 	Serial.println("BMP280 OK");
 	
 	Serial.println("Testing BMP280 sensor");
-	if (bmp.begin(0x77)) {
+	if (bmp.begin(0x76)) {
 		Serial.println("Could not find BMP280 sensor");
 		while (1);
+	}*/
+	mySensor.settings.commInterface = I2C_MODE;
+	mySensor.settings.I2CAddress = 0x76;
+	if (mySensor.beginI2C() == false) //Begin communication over I2C
+	{
+		Serial.println("The sensor did not respond. Please check wiring.");
+		while (1); //Freeze
 	}
 	Serial.println("BMP280 OK");
 	
@@ -80,18 +90,19 @@ void setup()
 }
 
 void loop()
-{		
-	t = bme.readTemperature();
-	Serial.println(bmp.readTemperature());
+{
 	client.loop();
+	
+	Serial.println(mySensor.readTempC(), 2);
 	client.publish("esp/sensors/temperature","t");
 	
-	
+	Serial.println(mySensor.readFloatHumidity(), 2);
 	client.publish("esp/sensors/humidity", "h");
-	Serial.println(bme.readHumidity());
-	
-	//p = bme.readPressure();
+	 
+	p = mySensor.readFloatPressure(), 0;
+	p = p / 133.322;
+	Serial.println(p);
 	client.publish("esp/sensors/pressure", "p");
-	Serial.println(bmp.readPressure());
+	
 	delay(5000);
 }
