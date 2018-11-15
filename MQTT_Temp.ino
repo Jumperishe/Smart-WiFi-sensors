@@ -23,7 +23,7 @@
 char res[8]; //bufer for conver float to string
 float temper, hum, press;
 const char* ssid = "JumperOK";
-const char* password = "specialized200926";
+const char* password = "****************";
 const char* mqttServer = "109.86.162.193";
 const int mqttPort = 1883;
 
