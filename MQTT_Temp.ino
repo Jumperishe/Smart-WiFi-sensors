@@ -2,9 +2,7 @@
 
 #include <SparkFunBME280.h>
 #include <Wire.h>
-#include <Adafruit_BMP280.h>
-#include <Adafruit_BME280.h>
-//#include <Adafruit_Sensor.h>
+
 
 #include <WiFiUdp.h>
 #include <WiFiServer.h>
@@ -15,28 +13,25 @@
 #include <ESP8266WiFiScan.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WiFiGeneric.h>
-#include <ESP8266WiFiAP.h>
+//#include <ESP8266WiFiAP.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
 
-#define BME_SCK 13
-#define BME_MISO 12
-#define BME_MOSI 11
-#define BME_CS 10
 
-float t, h, p;
-const char* ssid = "Edimax_2g";
-const char* password = "magnaTpwd0713key";
+
+char res[8]; //bufer for conver float to string
+float temper, hum, press;
+const char* ssid = "JumperOK";
+const char* password = "specialized200926";
 const char* mqttServer = "109.86.162.193";
 const int mqttPort = 1883;
 
-//BME280 mySensorA;
+
 WiFiClient espClient;
 PubSubClient client(espClient);	
 BME280 mySensor;
-//Adafruit_BME280 bme;
-//Adafruit_BMP280 bmp;
+
 void setup()
 {
 	Wire.begin();
@@ -45,17 +40,7 @@ void setup()
 	
 	Serial.println("Testing BME280 sensor");
 
-	/*if (bme.begin()) {
-		Serial.println("Could not find BME280 sensor");
-		while (1);
-	}
-	Serial.println("BMP280 OK");
 	
-	Serial.println("Testing BMP280 sensor");
-	if (bmp.begin(0x76)) {
-		Serial.println("Could not find BMP280 sensor");
-		while (1);
-	}*/
 	mySensor.settings.commInterface = I2C_MODE;
 	mySensor.settings.I2CAddress = 0x76;
 	if (mySensor.beginI2C() == false) //Begin communication over I2C
@@ -65,8 +50,9 @@ void setup()
 	}
 	Serial.println("BMP280 OK");
 	
-		WiFi.begin(ssid, password);
-	Serial.print("-=Connecting to WiFi=-");
+	WiFi.begin(ssid, password);
+	
+	Serial.println("Connecting to WiFi");
 
 	while (WiFi.status() != WL_CONNECTED) {
 		Serial.print(".");
@@ -91,18 +77,24 @@ void setup()
 
 void loop()
 {
+
 	client.loop();
 	
-	Serial.println(mySensor.readTempC(), 2);
-	client.publish("esp/sensors/temperature","t");
+	temper = mySensor.readTempC(), 2;
+	//Serial.println(temper);
+	dtostrf(temper, 4, 2, res);
+	client.publish("esp/sensors/temperature", res);
 	
-	Serial.println(mySensor.readFloatHumidity(), 2);
-	client.publish("esp/sensors/humidity", "h");
-	 
-	p = mySensor.readFloatPressure(), 0;
-	p = p / 133.322;
-	Serial.println(p);
-	client.publish("esp/sensors/pressure", "p");
+	hum = mySensor.readFloatHumidity(), 2;
+	//Serial.println(hum);
+	dtostrf(hum, 4, 2, res);
+	client.publish("esp/sensors/humidity", res);
+
+	press = mySensor.readFloatPressure(), 0;
+	press = press / 133.322;
+	//Serial.println(press);
+	dtostrf(press, 4, 2, res);
+	client.publish("esp/sensors/pressure", res);
 	
-	delay(5000);
+	delay(3000);
 }
