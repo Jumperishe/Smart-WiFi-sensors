@@ -10,12 +10,12 @@
 #include <PubSubClient.h>
 
 
-
+int sleepTimeS;
 unsigned long timer; //for time delay
 char res[8]; //bufer for conver float to string
 float temper, hum, press;
-const char* ssid = "JumperOK";
-const char* password = "*****************";
+const char* ssid = "Edimax_2g";
+const char* password = "magnaTpwd0713key";
 const char* mqttServer = "109.86.162.193";
 const int mqttPort = 1883;
 
@@ -69,8 +69,8 @@ void setup()
 
 void loop()
 {
-	if (millis() > (timer + 5000)) {
-		timer = millis();
+	///if (millis() > (timer + 5000)) {
+	//	timer = millis();
 
 		client.loop();
 
@@ -101,7 +101,10 @@ void loop()
 		Serial.println("");
 		Serial.println("JSON data format");
 		Serial.println(json);
-	}
+
+		// Going to the DEEP SLEEP MODE for 60 seconds
+		ESP.deepSleep(60e6);
+	//}
 	
 	
 
